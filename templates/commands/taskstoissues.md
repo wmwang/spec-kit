@@ -1,9 +1,6 @@
 ---
 description: Convert existing tasks into actionable, dependency-ordered GitHub issues for the feature based on available design artifacts.
 tools: ['github/github-mcp-server/issue_write']
-scripts:
-  sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
-  ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
 ---
 
 ## User Input
@@ -16,8 +13,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
-1. From the executed script, extract the path to **tasks**.
+1. Run from repo root:
+
+   ```bash
+   git branch --show-current
+   ```
+
+   Extract `BRANCH`. Set `FEATURE_DIR` = `specs/{BRANCH}` (absolute path). The path to tasks is `{FEATURE_DIR}/tasks.md`. All paths must be absolute.
 1. Get the Git remote by running:
 
 ```bash

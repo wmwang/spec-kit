@@ -1,6 +1,6 @@
 ---
 description: Execute the implementation planning workflow using the plan template to generate design artifacts.
-handoffs: 
+handoffs:
   - label: Create Tasks
     agent: speckit.tasks
     prompt: Break the plan into tasks
@@ -8,12 +8,6 @@ handoffs:
   - label: Create Checklist
     agent: speckit.checklist
     prompt: Create a checklist for the following domain...
-scripts:
-  sh: scripts/bash/setup-plan.sh --json
-  ps: scripts/powershell/setup-plan.ps1 -Json
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
 ## User Input
@@ -26,9 +20,27 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Run from repo root:
 
-2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+   ```bash
+   git branch --show-current
+   ```
+
+   Extract `BRANCH` from output. Establish variables:
+   - `BRANCH` = current git branch (must match `[0-9]+-[a-z0-9-]+`; if not, scan `specs/` for most recent feature dir or ask user)
+   - `FEATURE_DIR` = `specs/{BRANCH}` (absolute path)
+   - `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`
+   - `IMPL_PLAN` = `{FEATURE_DIR}/plan.md`
+
+   Copy `templates/plan-template.md` to `IMPL_PLAN` if it does not exist yet. Create `{FEATURE_DIR}/contracts/` directory:
+
+   ```bash
+   mkdir -p specs/{BRANCH}/contracts
+   ```
+
+   For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+
+2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md` (if it exists). Load IMPL_PLAN template (already copied).
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
@@ -82,11 +94,16 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Skip if project is purely internal (build scripts, one-off tools, etc.)
 
 3. **Agent context update**:
-   - Run `{AGENT_SCRIPT}`
-   - These scripts detect which AI agent is in use
-   - Update the appropriate agent-specific context file
-   - Add only new technology from current plan
-   - Preserve manual additions between markers
+   - Detect which AI agent is active by checking for these files in priority order:
+     - `CLAUDE.md` → Claude Code
+     - `.cursor/rules/` or `cursor.rules` → Cursor
+     - `.github/copilot-instructions.md` → GitHub Copilot
+     - `.windsurfrules` → Windsurf
+     - `.roo/rules/` → Roo Code
+     - `AGENTS.md` (generic fallback)
+   - Update the detected agent's context file with new technology from current plan
+   - Add only new technology; preserve existing content and manual additions
+   - Do not overwrite sections not related to the current feature
 
 **Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
 
