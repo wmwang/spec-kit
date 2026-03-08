@@ -1,18 +1,11 @@
 ---
+name: speckit-constitution
 description: 建立或更新專案憲法——治理所有規劃與實作的架構原則。不需安裝任何 CLI。
-handoffs:
-  - label: 建立功能規格
-    agent: speckit.specify
-    prompt: Implement the feature specification based on the updated constitution. I want to build...
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的原則內容或憲法修訂需求。
 
 ## 流程說明
 

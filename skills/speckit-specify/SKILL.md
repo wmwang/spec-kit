@@ -1,26 +1,15 @@
 ---
+name: speckit-specify
 description: 從自然語言描述建立 Feature Specification，自動建立 git 分支與目錄結構。不需安裝任何 CLI。
-handoffs:
-  - label: 建立技術計畫
-    agent: speckit.plan
-    prompt: Create a plan for the spec. I am building with...
-  - label: 釐清需求
-    agent: speckit.clarify
-    prompt: Clarify specification requirements
-    send: true
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的 feature 描述或額外說明。若使用者有提供具體說明，以其為優先依據。
 
 ## 流程說明
 
-`/speckit.specify` 後面接的文字**就是** feature 描述。除非使用者輸入為空，否則不要要求使用者重複。
+feature 描述**就是**使用者說的話。除非描述為空，否則不要要求使用者重複。
 
 ### 步驟 1：產生簡短的分支名稱
 
@@ -164,7 +153,7 @@ mkdir -p specs/{N}-{SHORT_NAME}/checklists
 
 ## 備註
 
-- 標記為未完成的項目需在執行 `/speckit.clarify` 或 `/speckit.plan` 之前更新規格
+- 標記為未完成的項目需在執行 speckit-clarify 或 speckit-plan skill 之前更新規格
 ```
 
 ### 步驟 6：處理 [待釐清] 標記
@@ -193,4 +182,4 @@ mkdir -p specs/{N}-{SHORT_NAME}/checklists
 - 已建立分支：`{BRANCH_NAME}`
 - 規格：`{SPEC_FILE}`
 - Checklist：`{FEATURE_DIR}/checklists/requirements.md`
-- 下一步：`/speckit.clarify` 或 `/speckit.plan`
+- 下一步：使用 speckit-clarify 或 speckit-plan skill

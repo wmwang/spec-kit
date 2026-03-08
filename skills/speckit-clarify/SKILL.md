@@ -1,22 +1,15 @@
 ---
+name: speckit-clarify
 description: 針對當前 feature spec 提出最多 5 個精準釐清問題，並將答案寫回 spec.md。不需安裝任何 CLI。
-handoffs:
-  - label: 建立技術計畫
-    agent: speckit.plan
-    prompt: Create a plan for the spec. I am building with...
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的釐清重點或特別關注的歧義領域。
 
 ## 流程說明
 
-**目標**：偵測並減少當前 feature spec 中的歧義，直接將釐清結果記錄在檔案中。應在 `/speckit.plan` **之前**執行。若使用者明確表示跳過（例如探索性 spike），可繼續，但須警告下游返工風險增加。
+**目標**：偵測並減少當前 feature spec 中的歧義，直接將釐清結果記錄在檔案中。應在 speckit-plan skill **之前**執行。若使用者明確表示跳過（例如探索性 spike），可繼續，但須警告下游返工風險增加。
 
 ### 步驟 1：找到當前 feature
 
@@ -27,7 +20,7 @@ git branch --show-current
 - 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
 - 否則：掃描 `specs/` 或詢問使用者
 
-設定 `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`。若不存在：ERROR，請使用者先執行 `/speckit.specify`。
+設定 `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`。若不存在：ERROR，請使用者先使用 speckit-specify skill。
 
 ### 步驟 2：結構化歧義掃描
 
@@ -122,8 +115,6 @@ git branch --show-current
 | 功能範疇 | 已解決 / 清晰 / 延後 / 待處理 |
 | ... | ... |
 
-- 若有待處理/延後項目：建議是否再次執行 `/speckit.clarify` 或進入 `/speckit.plan`
+- 若有待處理/延後項目：建議是否再次執行 speckit-clarify 或進入 speckit-plan skill
 
 **若無重要歧義**：直接說明並建議繼續下一步。
-
-優先排列的背景資訊：$ARGUMENTS

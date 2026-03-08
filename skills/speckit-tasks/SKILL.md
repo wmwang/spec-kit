@@ -1,23 +1,11 @@
 ---
+name: speckit-tasks
 description: 從現有規劃文件產生依賴排序的 tasks.md。不需安裝任何 CLI。
-handoffs:
-  - label: 一致性分析
-    agent: speckit.analyze
-    prompt: Run a project analysis for consistency
-    send: true
-  - label: 開始實作
-    agent: speckit.implement
-    prompt: Start the implementation in phases
-    send: true
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的額外指示（如範疇限制、MVP 優先級等）。
 
 ## 執行前：Extension Hooks
 
@@ -50,7 +38,7 @@ ls specs/{BRANCH}/
 - **必要**：`spec.md`（含優先級 P1/P2/P3... 的使用者故事）
 - **選用**：`data-model.md`、`contracts/`、`research.md`、`quickstart.md`
 
-若 `plan.md` 或 `spec.md` 不存在，停止並請使用者執行前提指令。
+若 `plan.md` 或 `spec.md` 不存在，停止並請使用者執行前提 skill。
 
 ### 步驟 3：產生任務分解
 
@@ -165,6 +153,6 @@ ls specs/{BRANCH}/
 - 平行執行機會
 - 建議的 MVP 範疇（通常是第 1+2+3 階段）
 
-### 執行後：Extension Hooks
+## 執行後：Extension Hooks
 
 檢查 `.specify/extensions.yml` 中的 `hooks.after_tasks`，處理方式同執行前。
