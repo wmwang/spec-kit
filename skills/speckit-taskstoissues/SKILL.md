@@ -1,15 +1,11 @@
 ---
-description: 將 tasks.md 中的任務轉換為遠端儲存庫上的 GitHub Issues。不需安裝任何 CLI。
-tools: ['github/github-mcp-server/issue_write']
+name: speckit-taskstoissues
+description: 將 tasks.md 中的任務轉換為遠端儲存庫上的 GitHub Issues。不需安裝任何 CLI。需要 GitHub MCP server。
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的額外說明（如 Issue 標籤、負責人指定等）。
 
 ## 流程說明
 
@@ -22,7 +18,7 @@ git branch --show-current
 - 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
 - 否則：掃描 `specs/` 或詢問使用者
 
-任務檔案：`{FEATURE_DIR}/tasks.md`（絕對路徑）。若不存在：請使用者先執行 `/speckit.tasks`。
+任務檔案：`{FEATURE_DIR}/tasks.md`（絕對路徑）。若不存在：請使用者先使用 speckit-tasks skill。
 
 ### 步驟 2：確認 GitHub 遠端
 

@@ -1,14 +1,11 @@
 ---
+name: speckit-implement
 description: 依序執行 tasks.md 中定義的所有任務，完成 feature 實作。不需安裝任何 CLI。
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的額外指示（如只實作特定階段、跳過某些任務等）。
 
 ## 執行前：Extension Hooks
 
@@ -34,7 +31,7 @@ git branch --show-current
 ls specs/{BRANCH}/
 ```
 
-確認 `{FEATURE_DIR}/tasks.md` 存在。若不存在：請使用者先執行 `/speckit.tasks`。
+確認 `{FEATURE_DIR}/tasks.md` 存在。若不存在：請使用者先使用 speckit-tasks skill。
 
 ### 步驟 2：Checklist 關卡
 
@@ -107,6 +104,6 @@ ls package.json 2>/dev/null            # → 需要 .npmignore？
 - 測試通過（若適用）
 - 回報最終狀態與已完成工作摘要
 
-### 執行後：Extension Hooks
+## 執行後：Extension Hooks
 
 檢查 `.specify/extensions.yml` 中的 `hooks.after_implement`，處理方式同執行前。

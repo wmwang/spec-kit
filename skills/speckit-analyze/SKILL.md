@@ -1,24 +1,21 @@
 ---
+name: speckit-analyze
 description: 對 spec.md、plan.md 和 tasks.md 進行唯讀的跨文件一致性分析。不需安裝任何 CLI。
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的分析重點或特別關注的面向。
 
 ## 目標
 
-在實作前，識別 `spec.md`、`plan.md`、`tasks.md` 三份核心文件之間的不一致、重複、歧義和規格不足。應在 `/speckit.tasks` 之後執行。
+在實作前，識別 `spec.md`、`plan.md`、`tasks.md` 三份核心文件之間的不一致、重複、歧義和規格不足。應在 speckit-tasks skill 之後執行。
 
 ## 操作限制
 
 **嚴格唯讀**：不修改任何檔案。僅輸出結構化分析報告。
 
-**憲法權威**：`.specify/memory/constitution.md` 在此分析範疇內**不可妥協**。憲法衝突自動標記為 CRITICAL。若需修改原則，請透過 `/speckit.constitution` 另行處理。
+**憲法權威**：`.specify/memory/constitution.md` 在此分析範疇內**不可妥協**。憲法衝突自動標記為 CRITICAL。若需修改原則，請透過 speckit-constitution skill 另行處理。
 
 ## 執行步驟
 
@@ -36,7 +33,7 @@ git branch --show-current
 - `PLAN` = `{FEATURE_DIR}/plan.md`
 - `TASKS` = `{FEATURE_DIR}/tasks.md`
 
-若任何必要檔案不存在：中止並說明需要執行哪個前提指令。
+若任何必要檔案不存在：中止並說明需要執行哪個前提 skill。
 
 ### 步驟 2：載入文件（最小必要背景）
 
@@ -111,14 +108,10 @@ git branch --show-current
 
 ### 步驟 7：後續行動建議
 
-- 有 CRITICAL 問題 → 建議在 `/speckit.implement` 前解決
+- 有 CRITICAL 問題 → 建議在 speckit-implement skill 前解決
 - 僅 LOW/MEDIUM → 可繼續，列出改善建議
 - 提供明確的指令建議（例如：「編輯 spec.md §FR-3 以量化『快』」）
 
 ### 步驟 8：提供修復建議
 
 詢問：*「需要我針對前 N 個問題提供具體修改建議嗎？」*——不自動套用。
-
-## 背景資訊
-
-$ARGUMENTS

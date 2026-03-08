@@ -1,22 +1,11 @@
 ---
+name: speckit-plan
 description: 從 feature spec 產生實作規劃文件（research.md、data-model.md、contracts/）。不需安裝任何 CLI。
-handoffs:
-  - label: 建立任務清單
-    agent: speckit.tasks
-    prompt: Break the plan into tasks
-    send: true
-  - label: 建立 Checklist
-    agent: speckit.checklist
-    prompt: Create a checklist for the following domain...
 ---
 
 ## 使用者輸入
 
-```text
-$ARGUMENTS
-```
-
-**必須**在繼續之前考慮使用者輸入（若不為空）。
+請考慮使用者在對話中提供的技術偏好或額外說明（如技術堆疊、框架選擇等）。
 
 ## 流程說明
 
@@ -35,7 +24,7 @@ git branch --show-current
 - `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`
 - `IMPL_PLAN` = `{FEATURE_DIR}/plan.md`
 
-確認 `FEATURE_SPEC` 存在。若不存在：請使用者先執行 `/speckit.specify`。
+確認 `FEATURE_SPEC` 存在。若不存在：請使用者先使用 speckit-specify skill。
 
 建立目錄：
 ```bash
@@ -84,7 +73,7 @@ specs/{BRANCH}/
 ├── data-model.md   ← 第 1 階段產出
 ├── quickstart.md   ← 第 1 階段產出
 ├── contracts/      ← 第 1 階段產出
-└── tasks.md        ← /speckit.tasks 產出
+└── tasks.md        ← speckit-tasks 產出
 \`\`\`
 
 ### 原始碼
@@ -203,4 +192,4 @@ ls AGENTS.md 2>/dev/null                               # → 通用 fallback
 - 分支：`{BRANCH}`
 - 計畫：`{IMPL_PLAN}`
 - 已產生：`research.md` ✅、`data-model.md` ✅（或 N/A）、`contracts/` ✅（或 N/A）
-- 下一步：`/speckit.tasks`
+- 下一步：使用 speckit-tasks skill
