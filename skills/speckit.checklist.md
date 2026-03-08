@@ -1,161 +1,168 @@
 ---
-description: Generate a "unit tests for requirements" checklist — validates quality, clarity, and completeness of requirements, NOT implementation behavior. No CLI installation required.
+description: 產生「需求的單元測試」Checklist——驗證需求的品質、清晰度和完整性，而非實作行為。不需安裝任何 CLI。
 ---
 
-## Concept: "Unit Tests for English"
+## 概念：「英文的單元測試」
 
-Checklists validate **requirements quality**, not implementation behavior.
+Checklist 驗證的是**需求品質**，而非實作行為。
 
-**NOT**:
-- ❌ "Verify the button clicks correctly"
-- ❌ "Test error handling works"
+**不是**：
+- ❌ 「確認按鈕可以正確點擊」
+- ❌ 「測試錯誤處理是否正常運作」
 
-**YES**:
-- ✅ "Are visual hierarchy requirements defined with measurable criteria? [Clarity]"
-- ✅ "Is 'prominent display' quantified with specific sizing? [Clarity, Spec §FR-4]"
-- ✅ "Are hover states consistently defined for all interactive elements? [Consistency]"
+**而是**：
+- ✅ 「視覺層級需求是否以可量測標準定義？[清晰度]」
+- ✅ 「『顯著顯示』是否以具體尺寸/位置量化？[清晰度, Spec §FR-4]」
+- ✅ 「懸停狀態需求是否對所有互動元素一致定義？[一致性]」
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Execution Steps
+## 執行步驟
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 或詢問使用者
 
-### Step 2: Clarify intent (up to 3 questions)
+### 步驟 2：釐清意圖（最多 3 個問題）
 
-Derive clarifying questions from user's phrasing + signals in spec/plan/tasks. Only ask if the answer materially changes checklist content. Skip questions already answered in `$ARGUMENTS`.
+從使用者措辭與 spec/plan/tasks 中的信號，推導釐清問題。只在答案**確實改變 checklist 內容**時才問。`$ARGUMENTS` 中已清楚說明的部分跳過。
 
-Extract signals: domain keywords (auth, latency, UX, API), risk indicators ("critical", "compliance"), audience hints ("QA", "security team"), deliverables ("a11y", "rollback").
+提取信號：領域關鍵字（auth、延遲、UX、API）、風險指示（「關鍵」、「法規合規」）、對象提示（「QA」、「安全團隊」）、交付物（「a11y」、「rollback」）。
 
-Question archetypes:
-- Scope: "Should this include X or stay limited to Y?"
-- Depth: "Lightweight sanity list or formal release gate?"
-- Audience: "For the author or PR reviewers?"
-- Risk emphasis: "Which risk areas should have mandatory gates?"
+問題原型：
+- 範疇：「是否應包含 X，或只限定在 Y？」
+- 深度：「輕量事前確認清單，還是正式發布關卡？」
+- 對象：「給作者自己，還是給 PR 審查者？」
+- 風險重點：「哪些風險區域應設為必要關卡？」
 
-After initial answers: if ≥2 scenario classes remain unclear, ask up to 2 more (Q4/Q5 max). Never exceed 5 total.
+初始答案後，若 ≥2 個情境類別仍不明確，可追加最多 2 個問題（Q4/Q5）。總問題不超過 5 個。
 
-**Defaults when interaction impossible**: Standard depth, Reviewer audience, top 2 relevance clusters.
+**無法互動時的預設值**：標準深度、審查者對象、前 2 個相關性群集。
 
-### Step 3: Load feature context (minimal)
+### 步驟 3：了解使用者需求
 
-From `FEATURE_DIR`: `spec.md` (required), `plan.md` (if exists), `tasks.md` (if exists).
+結合 `$ARGUMENTS` + 釐清答案：
+- 推導 checklist 主題（例如：安全性、審查、部署、UX）
+- 整合使用者明確指定的必要項目
+- 從 spec/plan/tasks 推斷缺少的背景（不要臆測）
 
-Load only portions relevant to the focus area. Summarize long sections.
+### 步驟 4：載入功能背景（最小必要）
 
-### Step 4: Determine checklist file
+從 `FEATURE_DIR`：`spec.md`（必要）、`plan.md`（若存在）、`tasks.md`（若存在）。
 
-Use a short descriptive name based on domain:
-- UX/interaction → `ux.md`
-- API/endpoints → `api.md`
-- Security → `security.md`
-- Performance → `performance.md`
-- Testing/QA → `qa.md`
+只載入與焦點領域相關的部分，長段落摘要為要點。
+
+### 步驟 5：產生 Checklist 項目
+
+**確定 Checklist 檔案**：
 
 ```bash
 mkdir -p specs/{BRANCH}/checklists
 ```
 
-- File does NOT exist → create new, start IDs at CHK001
-- File EXISTS → append, continue from last CHK ID (e.g., last is CHK015 → next is CHK016)
-- **Never delete or overwrite existing items**
+依領域使用短描述性名稱：
+- UX/互動 → `ux.md`
+- API/端點 → `api.md`
+- 安全性 → `security.md`
+- 效能 → `performance.md`
+- 測試/QA → `qa.md`
 
-### Step 5: Generate checklist items
+- 檔案**不存在** → 建立新檔，ID 從 CHK001 開始
+- 檔案**存在** → 附加，從最後 CHK ID 繼續（例如最後是 CHK015，下一個是 CHK016）
+- **絕不刪除或覆寫現有項目**
 
-Use this file structure:
+**檔案結構**：
 
 ```markdown
-# {Type} Checklist: {FEATURE NAME}
+# {類型} Checklist：{功能名稱}
 
-**Purpose**: {what this validates}
-**Created**: {TODAY}
-**Feature**: [spec.md](../spec.md)
+**目的**：{此 checklist 驗證什麼}
+**建立日期**：{今天}
+**功能**：[spec.md](../spec.md)
 
-## Requirement Completeness
+## 需求完整性
 
-- [ ] CHK001 Are {requirement type} defined for all {scenarios}? [Completeness, Spec §X.Y]
-- [ ] CHK002 Are {requirement type} specified for {edge case}? [Gap]
+- [ ] CHK001 {需求類型}的需求是否為所有{情境}定義？[完整性, Spec §X.Y]
+- [ ] CHK002 {邊界情況}的需求是否已指定？[缺口]
 
-## Requirement Clarity
+## 需求清晰度
 
-- [ ] CHK003 Is '{vague term}' quantified with specific criteria? [Clarity, Spec §X.Y]
-- [ ] CHK004 Can '{requirement}' be objectively measured? [Measurability, Spec §X.Y]
+- [ ] CHK003 「{模糊術語}」是否以具體標準量化？[清晰度, Spec §X.Y]
+- [ ] CHK004 「{需求}」是否可以客觀量測？[可量測性, Spec §X.Y]
 
-## Requirement Consistency
+## 需求一致性
 
-- [ ] CHK005 Are requirements consistent between {section A} and {section B}? [Consistency]
+- [ ] CHK005 {段落 A} 和 {段落 B} 的需求是否一致？[一致性]
 
-## Scenario Coverage
+## 情境覆蓋
 
-- [ ] CHK006 Are {alternate/exception/recovery} flows addressed in requirements? [Coverage, Gap]
+- [ ] CHK006 {替代/例外/復原}流程是否在需求中涵蓋？[覆蓋, 缺口]
 
-## Non-Functional Requirements
+## 非功能需求
 
-- [ ] CHK007 Are {performance/security/accessibility} requirements specified? [Coverage, Gap]
+- [ ] CHK007 {效能/安全性/無障礙}需求是否已指定？[覆蓋, 缺口]
 
-## Dependencies & Assumptions
+## 相依性與假設
 
-- [ ] CHK008 Are external dependencies documented with failure modes? [Dependency, Gap]
+- [ ] CHK008 外部相依性是否已記錄並含失敗模式？[相依性, 缺口]
 ```
 
-**Writing rules**:
+**撰寫規則**：
 
-Every item must:
-- Be in question form asking about requirement quality
-- Include a quality dimension: `[Completeness]`, `[Clarity]`, `[Consistency]`, `[Measurability]`, `[Coverage]`, `[Gap]`, `[Ambiguity]`, `[Conflict]`, `[Assumption]`
-- Reference spec section `[Spec §X.Y]` when checking existing requirements
-- Use `[Gap]` when checking for missing requirements
-- Minimum 80% of items must have at least one traceability reference
+每個項目必須：
+- 以問句形式詢問需求品質
+- 包含品質維度：`[完整性]`、`[清晰度]`、`[一致性]`、`[可量測性]`、`[覆蓋]`、`[缺口]`、`[歧義]`、`[衝突]`、`[假設]`
+- 檢查現有需求時引用規格段落 `[Spec §X.Y]`
+- 檢查缺失需求時使用 `[缺口]`
+- 最少 80% 的項目必須有至少一個可追溯性引用
 
-**Required item patterns**:
-- ✅ "Are {requirement type} defined/specified/documented for {scenario}?"
-- ✅ "Is '{vague term}' quantified/clarified with specific criteria?"
-- ✅ "Are requirements consistent between {section A} and {section B}?"
-- ✅ "Can '{requirement}' be objectively measured/verified?"
-- ✅ "Are {edge cases/scenarios} addressed in requirements?"
-- ✅ "Does the spec define {missing aspect}?"
+**必要的問句模式**：
+- ✅ 「{需求類型}的需求是否已定義/指定/記錄？」
+- ✅ 「「{模糊術語}」是否以具體標準量化/釐清？」
+- ✅ 「{段落 A} 和 {段落 B} 的需求是否一致？」
+- ✅ 「「{需求}」是否可以客觀量測/驗證？」
+- ✅ 「{邊界情況/情境}是否在需求中涵蓋？」
+- ✅ 「規格是否定義了{缺失面向}？」
 
-**Absolutely prohibited**:
-- ❌ Items starting with "Verify", "Test", "Confirm" + implementation behavior
-- ❌ References to code execution, user clicks, system rendering
-- ❌ "Displays correctly", "works properly", "functions as expected"
-- ❌ Implementation details (frameworks, APIs, algorithms)
+**絕對禁止**：
+- ❌ 以「確認」、「測試」、「驗證」+ 實作行為開頭的項目
+- ❌ 引用程式執行、使用者點擊、系統渲染
+- ❌ 「正確顯示」、「正常運作」、「如預期運作」
+- ❌ 「點擊」、「導覽」、「渲染」、「載入」、「執行」
+- ❌ 實作細節（框架、API、演算法）
 
-**Content consolidation**: soft cap 40 items; if >5 low-impact edge cases, merge into one item.
+**內容整合**：項目上限 40 個；若有超過 5 個低影響邊界情況，合併為一個項目。
 
-### Step 6: Report
+### 步驟 6：回報結果
 
-- Full path to checklist file
-- Item count (total, new)
-- New file or appended
-- Focus areas selected
-- Audience/depth level
+- Checklist 檔案的完整路徑
+- 項目數量（總計、本次新增）
+- 新建還是附加
+- 選定的焦點領域、深度級別、對象
 
-## Domain Examples
+## 各領域範例
 
-**UX** (`ux.md`):
-- "Are visual hierarchy requirements defined with measurable criteria? [Clarity, Spec §FR-1]"
-- "Are interaction state requirements (hover, focus, active) consistently defined? [Consistency]"
-- "Is fallback behavior specified when images fail to load? [Edge Case, Gap]"
+**UX**（`ux.md`）：
+- 「視覺層級需求是否以可量測標準定義？[清晰度, Spec §FR-1]」
+- 「互動狀態需求（懸停、焦點、啟用）是否一致定義？[一致性]」
+- 「圖片載入失敗時的備用行為是否已指定？[邊界情況, 缺口]」
 
-**API** (`api.md`):
-- "Are error response formats specified for all failure scenarios? [Completeness]"
-- "Are rate limiting requirements quantified with specific thresholds? [Clarity]"
+**API**（`api.md`）：
+- 「所有失敗情境的錯誤回應格式是否已指定？[完整性]」
+- 「速率限制需求是否以具體門檻量化？[清晰度]」
 
-**Security** (`security.md`):
-- "Are authentication requirements specified for all protected resources? [Coverage]"
-- "Is the threat model documented and requirements aligned to it? [Traceability]"
-- "Are security failure/breach response requirements defined? [Gap, Exception Flow]"
+**安全性**（`security.md`）：
+- 「所有受保護資源的驗證需求是否已指定？[覆蓋]」
+- 「威脅模型是否已記錄且需求與其一致？[可追溯性]」
+- 「安全失效/資安事件的回應需求是否已定義？[缺口, 例外流程]」
