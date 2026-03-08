@@ -1,196 +1,196 @@
 ---
-description: Create a feature specification from a natural language description. Creates git branch, directory structure, and writes spec.md. No CLI installation required.
+description: 從自然語言描述建立 Feature Specification，自動建立 git 分支與目錄結構。不需安裝任何 CLI。
 handoffs:
-  - label: Build Technical Plan
+  - label: 建立技術計畫
     agent: speckit.plan
     prompt: Create a plan for the spec. I am building with...
-  - label: Clarify Spec Requirements
+  - label: 釐清需求
     agent: speckit.clarify
     prompt: Clarify specification requirements
     send: true
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Outline
+## 流程說明
 
-The text after `/speckit.specify` **is** the feature description. Do not ask the user to repeat it unless they gave an empty command.
+`/speckit.specify` 後面接的文字**就是** feature 描述。除非使用者輸入為空，否則不要要求使用者重複。
 
-### Step 1: Generate a short branch name
+### 步驟 1：產生簡短的分支名稱
 
-From the feature description, create a 2–4 word kebab-case name:
+從 feature 描述中，建立一個 2–4 個詞的 kebab-case 名稱：
 
-- "Add user authentication" → `user-auth`
-- "Implement OAuth2 for the API" → `oauth2-api-integration`
-- "Analytics dashboard" → `analytics-dashboard`
-- "Fix payment timeout bug" → `fix-payment-timeout`
+- "新增使用者驗證" → `user-auth`
+- "實作 API 的 OAuth2 整合" → `oauth2-api-integration`
+- "分析儀表板" → `analytics-dashboard`
+- "修正付款逾時 bug" → `fix-payment-timeout`
 
-Preserve technical terms (OAuth2, JWT, API). Use lowercase and hyphens only.
+保留技術術語（OAuth2、JWT、API）。只使用小寫和連字號。
 
-### Step 2: Determine next feature number
+### 步驟 2：確定下一個功能編號
 
 ```bash
 git fetch --all --prune 2>/dev/null || true
 ```
 
-Search all three sources for the highest existing number matching `<short-name>`:
+從三個來源搜尋符合 `<short-name>` 的最高現有編號：
 
 ```bash
-# Remote branches
+# 遠端分支
 git ls-remote --heads origin 2>/dev/null | grep -oE '[0-9]+-<short-name>$' | grep -oE '^[0-9]+' | sort -n | tail -1
 
-# Local branches
+# 本地分支
 git branch 2>/dev/null | grep -oE '[0-9]+-<short-name>' | grep -oE '^[0-9]+' | sort -n | tail -1
 
-# Existing specs dirs
+# 現有 specs 目錄
 ls specs/ 2>/dev/null | grep -E '^[0-9]+-<short-name>$' | grep -oE '^[0-9]+' | sort -n | tail -1
 ```
 
-Take the highest N across all three sources. Use N+1 (start at 1 if none found).
+取三個來源中最高的 N，使用 N+1（若無則從 1 開始）。
 
-### Step 3: Create branch and directory
+### 步驟 3：建立分支與目錄
 
 ```bash
 git checkout -b {N}-{SHORT_NAME}
 mkdir -p specs/{N}-{SHORT_NAME}/checklists
 ```
 
-Establish:
+確立變數：
 - `BRANCH_NAME` = `{N}-{SHORT_NAME}`
 - `FEATURE_DIR` = `specs/{N}-{SHORT_NAME}`
 - `SPEC_FILE` = `specs/{N}-{SHORT_NAME}/spec.md`
 
-### Step 4: Write the spec
+### 步驟 4：撰寫規格文件
 
-If description is empty: ERROR "No feature description provided"
+若描述為空：ERROR「未提供 feature 描述」
 
-Extract: actors, actions, data, constraints. Make informed guesses for unknowns. Only add `[NEEDS CLARIFICATION: <question>]` when the choice materially changes scope, security, or UX **and** no reasonable default exists. **Maximum 3 such markers.**
+提取：角色、行為、資料、限制條件。對未知事項做出合理推測。只在選擇**明顯影響範疇、安全性或使用者體驗**，且**沒有合理預設值**時，才加入 `[待釐清：<問題>]`。**最多 3 個此類標記。**
 
-Write `SPEC_FILE` using this structure:
+使用以下結構寫入 `SPEC_FILE`：
 
 ```markdown
-# Feature Specification: {FEATURE NAME}
+# 功能規格：{功能名稱}
 
-**Feature Branch**: `{BRANCH_NAME}`
-**Created**: {TODAY}
-**Status**: Draft
-**Input**: {USER DESCRIPTION}
+**功能分支**：`{BRANCH_NAME}`
+**建立日期**：{今天}
+**狀態**：草稿
+**輸入**：{使用者描述}
 
-## User Scenarios & Testing
+## 使用者情境與測試
 
-### User Story 1 – {Brief Title} (Priority: P1)
+### 使用者故事 1 – {簡短標題}（優先級：P1）
 
-{User journey in plain language}
+{以平易近人的語言描述使用者旅程}
 
-**Why this priority**: {business value}
+**此優先級的原因**：{商業價值}
 
-**Independent Test**: {how to test this story alone}
+**獨立測試方式**：{如何單獨測試此故事}
 
-**Acceptance Scenarios**:
+**驗收情境**：
 
-1. **Given** {state}, **When** {action}, **Then** {outcome}
-2. **Given** {state}, **When** {action}, **Then** {outcome}
+1. **假設** {狀態}，**當** {行為}，**則** {預期結果}
+2. **假設** {狀態}，**當** {行為}，**則** {預期結果}
 
 ---
 
-### User Story 2 – {Brief Title} (Priority: P2)
+### 使用者故事 2 – {簡短標題}（優先級：P2）
 
-{Continue pattern}
+{繼續同樣格式}
 
 ---
 
-### Edge Cases
+### 邊界情況
 
-- What happens when {boundary condition}?
-- How does the system handle {error scenario}?
+- 當 {邊界條件} 時會發生什麼？
+- 系統如何處理 {錯誤情境}？
 
-## Requirements
+## 需求
 
-### Functional Requirements
+### 功能需求
 
-- **FR-001**: System MUST {specific capability}
-- **FR-002**: System MUST {specific capability}
+- **FR-001**：系統必須 {具體能力}
+- **FR-002**：系統必須 {具體能力}
 
-### Key Entities *(include only if feature involves data)*
+### 關鍵實體（僅在功能涉及資料時加入）
 
-- **{Entity}**: {what it represents, key attributes}
+- **{實體}**：{代表什麼，關鍵屬性}
 
-## Success Criteria
+## 成功標準
 
-- **SC-001**: {measurable, technology-agnostic metric}
-- **SC-002**: {measurable, technology-agnostic metric}
+- **SC-001**：{可量測、與技術無關的指標}
+- **SC-002**：{可量測、與技術無關的指標}
 ```
 
-**Success criteria rules**: specific metrics (time/%, count/rate), no frameworks/languages/DBs, user-facing outcomes, verifiable without knowing implementation.
+**成功標準規則**：具體指標（時間/百分比/數量/比率）、不含框架/語言/資料庫、以使用者角度描述結果、不需知道實作細節即可驗證。
 
-### Step 5: Create quality checklist
+### 步驟 5：建立品質 Checklist
 
-Write `FEATURE_DIR/checklists/requirements.md`:
+寫入 `FEATURE_DIR/checklists/requirements.md`：
 
 ```markdown
-# Specification Quality Checklist: {FEATURE NAME}
+# 規格品質 Checklist：{功能名稱}
 
-**Purpose**: Validate specification completeness before planning
-**Created**: {TODAY}
-**Feature**: [spec.md](../spec.md)
+**目的**：在進入規劃前，驗證規格的完整性
+**建立日期**：{今天}
+**功能**：[spec.md](../spec.md)
 
-## Content Quality
+## 內容品質
 
-- [ ] No implementation details (languages, frameworks, APIs)
-- [ ] Focused on user value and business needs
-- [ ] Written for non-technical stakeholders
-- [ ] All mandatory sections completed
+- [ ] 無實作細節（語言、框架、API）
+- [ ] 聚焦於使用者價值和商業需求
+- [ ] 以非技術利害關係人為撰寫對象
+- [ ] 所有必要段落已完成
 
-## Requirement Completeness
+## 需求完整性
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
-- [ ] Requirements are testable and unambiguous
-- [ ] Success criteria are measurable and technology-agnostic
-- [ ] All acceptance scenarios are defined
-- [ ] Edge cases are identified
-- [ ] Scope is clearly bounded
+- [ ] 無 [待釐清] 標記殘留
+- [ ] 需求可測試且無歧義
+- [ ] 成功標準可量測且與技術無關
+- [ ] 所有驗收情境已定義
+- [ ] 邊界情況已識別
+- [ ] 範圍明確界定
 
-## Feature Readiness
+## 功能就緒度
 
-- [ ] All functional requirements have clear acceptance criteria
-- [ ] User scenarios cover primary flows
-- [ ] No implementation details leak into specification
+- [ ] 所有功能需求都有明確的驗收標準
+- [ ] 使用者情境涵蓋主要流程
+- [ ] 規格中沒有洩漏實作細節
 
-## Notes
+## 備註
 
-- Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
+- 標記為未完成的項目需在執行 `/speckit.clarify` 或 `/speckit.plan` 之前更新規格
 ```
 
-### Step 6: Handle [NEEDS CLARIFICATION] markers
+### 步驟 6：處理 [待釐清] 標記
 
-If any remain, present them (max 3) as:
+若有殘留（最多 3 個），以此格式呈現：
 
 ```markdown
-## Question {N}: {Topic}
+## 問題 {N}：{主題}
 
-**Context**: {quote relevant spec section}
-**What we need to know**: {specific question}
+**背景**：{引用相關規格段落}
+**需要了解**：{具體問題}
 
-**Options**:
+**選項**：
 
-| Option | Answer | Implications |
-|--------|--------|--------------|
-| A | {answer} | {what this means} |
-| B | {answer} | {what this means} |
-| C | {answer} | {what this means} |
+| 選項 | 答案 | 影響 |
+|------|------|------|
+| A | {答案} | {代表什麼} |
+| B | {答案} | {代表什麼} |
+| C | {答案} | {代表什麼} |
 ```
 
-Wait for responses, replace markers with chosen answers, re-validate checklist.
+等待回應，用選擇的答案替換標記，重新驗證 checklist。
 
-### Step 7: Report
+### 步驟 7：回報結果
 
-- Branch created: `{BRANCH_NAME}`
-- Spec: `{SPEC_FILE}`
-- Checklist: `{FEATURE_DIR}/checklists/requirements.md`
-- Next: `/speckit.clarify` or `/speckit.plan`
+- 已建立分支：`{BRANCH_NAME}`
+- 規格：`{SPEC_FILE}`
+- Checklist：`{FEATURE_DIR}/checklists/requirements.md`
+- 下一步：`/speckit.clarify` 或 `/speckit.plan`

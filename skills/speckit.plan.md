@@ -1,207 +1,206 @@
 ---
-description: Generate implementation planning artifacts (research.md, data-model.md, contracts/) from a feature spec. No CLI installation required.
+description: 從 feature spec 產生實作規劃文件（research.md、data-model.md、contracts/）。不需安裝任何 CLI。
 handoffs:
-  - label: Create Tasks
+  - label: 建立任務清單
     agent: speckit.tasks
     prompt: Break the plan into tasks
     send: true
-  - label: Create Checklist
+  - label: 建立 Checklist
     agent: speckit.checklist
     prompt: Create a checklist for the following domain...
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Outline
+## 流程說明
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` for most recently modified subdirectory, or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 找最近修改的子目錄，或詢問使用者
 
-Variables:
-- `BRANCH` = current branch
-- `FEATURE_DIR` = `specs/{BRANCH}` (absolute path)
+確立變數：
+- `BRANCH` = 當前 git 分支
+- `FEATURE_DIR` = `specs/{BRANCH}`（絕對路徑）
 - `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`
 - `IMPL_PLAN` = `{FEATURE_DIR}/plan.md`
 
-Verify `FEATURE_SPEC` exists. If not: instruct user to run `/speckit.specify` first.
+確認 `FEATURE_SPEC` 存在。若不存在：請使用者先執行 `/speckit.specify`。
 
-Create directories:
+建立目錄：
 ```bash
 mkdir -p specs/{BRANCH}/contracts
 ```
 
-### Step 2: Initialize plan.md
+### 步驟 2：初始化 plan.md
 
-If `IMPL_PLAN` does not exist, create it with this structure:
+若 `IMPL_PLAN` 不存在，使用以下結構建立：
 
 ```markdown
-# Implementation Plan: {FEATURE NAME}
+# 實作計畫：{功能名稱}
 
-**Branch**: `{BRANCH}` | **Date**: {TODAY} | **Spec**: [spec.md](spec.md)
+**分支**：`{BRANCH}` | **日期**：{今天} | **規格**：[spec.md](spec.md)
 
-## Summary
+## 摘要
 
-{primary requirement + chosen technical approach}
+{主要需求 + 選定的技術方向}
 
-## Technical Context
+## 技術背景
 
-**Language/Version**: {e.g. Python 3.11 | NEEDS CLARIFICATION}
-**Primary Dependencies**: {e.g. FastAPI, SQLAlchemy | NEEDS CLARIFICATION}
-**Storage**: {e.g. PostgreSQL | N/A}
-**Testing**: {e.g. pytest | NEEDS CLARIFICATION}
-**Target Platform**: {e.g. Linux server, web browser | NEEDS CLARIFICATION}
-**Project Type**: {library / cli / web-service / mobile-app / desktop-app | NEEDS CLARIFICATION}
-**Performance Goals**: {e.g. <200ms p95 | NEEDS CLARIFICATION}
-**Constraints**: {e.g. offline-capable, <100MB memory | NEEDS CLARIFICATION}
-**Scale/Scope**: {e.g. 10k users | NEEDS CLARIFICATION}
+**語言/版本**：{例如 Python 3.11 | 待釐清}
+**主要相依套件**：{例如 FastAPI、SQLAlchemy | 待釐清}
+**儲存方式**：{例如 PostgreSQL | N/A}
+**測試框架**：{例如 pytest | 待釐清}
+**目標平台**：{例如 Linux server、瀏覽器 | 待釐清}
+**專案類型**：{函式庫 / CLI / Web 服務 / 行動 App / 桌面 App | 待釐清}
+**效能目標**：{例如 p95 < 200ms | 待釐清}
+**限制條件**：{例如 離線可用、< 100MB 記憶體 | 待釐清}
+**規模/範疇**：{例如 10k 用戶 | 待釐清}
 
-## Constitution Check
+## 憲法檢核
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*關卡：在第 0 階段研究前必須通過。第 1 階段設計後重新確認。*
 
-{gates from .specify/memory/constitution.md, or "No constitution defined"}
+{依據 .specify/memory/constitution.md 的關卡，若無憲法則填「尚未定義憲法」}
 
-## Project Structure
+## 專案結構
 
-### Documentation
+### 文件（此 feature）
 
 \`\`\`
 specs/{BRANCH}/
-├── plan.md         ← this file
-├── research.md     ← Phase 0 output
-├── data-model.md   ← Phase 1 output
-├── quickstart.md   ← Phase 1 output
-├── contracts/      ← Phase 1 output
-└── tasks.md        ← /speckit.tasks output
+├── plan.md         ← 本檔案
+├── research.md     ← 第 0 階段產出
+├── data-model.md   ← 第 1 階段產出
+├── quickstart.md   ← 第 1 階段產出
+├── contracts/      ← 第 1 階段產出
+└── tasks.md        ← /speckit.tasks 產出
 \`\`\`
 
-### Source Code
+### 原始碼
 
 \`\`\`
-{concrete directory tree based on tech stack}
+{依技術堆疊的具體目錄樹}
 \`\`\`
 
-## Complexity Tracking
+## 複雜度追蹤
 
-> Fill ONLY if Constitution Check has violations that must be justified
+> 僅在憲法檢核有需要說明的違規時填寫
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|--------------------------------------|
+| 違規項目 | 為何必要 | 拒絕更簡單方案的原因 |
+|---------|---------|-------------------|
 ```
 
-### Step 3: Fill Technical Context
+### 步驟 3：填寫技術背景
 
-Detect from existing repo files:
-- `package.json` → Node.js; check `dependencies` for framework
-- `pyproject.toml` / `setup.py` → Python; check `[tool.poetry.dependencies]` or `install_requires`
+從現有 repo 檔案偵測技術堆疊：
+- `package.json` → Node.js；查 `dependencies` 確認框架
+- `pyproject.toml` / `setup.py` → Python
 - `go.mod` → Go
 - `Cargo.toml` → Rust
 - `*.csproj` / `*.sln` → .NET
 - `build.gradle` / `pom.xml` → Java/Kotlin
 
-Mark unresolvable items as `NEEDS CLARIFICATION`.
+無法解析的項目標記為「待釐清」。
 
-### Step 4: Constitution Check
+### 步驟 4：憲法檢核
 
-Read `.specify/memory/constitution.md` if it exists. Evaluate each principle's gates. Mark PASS / FAIL / N/A. ERROR if FAIL and not justified in Complexity Tracking.
+讀取 `.specify/memory/constitution.md`（若存在）。評估每條原則的關卡，標記 通過 / 失敗 / 不適用。若失敗且在複雜度追蹤中未說明：ERROR。
 
-### Step 5: Phase 0 — Research
+### 步驟 5：第 0 階段 — 研究
 
-For each `NEEDS CLARIFICATION` in Technical Context, research and resolve it using repo analysis and best-practice reasoning.
+針對技術背景中每個「待釐清」項目，進行研究並解析。
 
-Write `{FEATURE_DIR}/research.md`:
-
-```markdown
-# Research: {FEATURE NAME}
-
-**Date**: {TODAY}
-
-## Decisions
-
-### {Decision Topic}
-
-- **Decision**: {chosen option}
-- **Rationale**: {why}
-- **Alternatives considered**: {what else was evaluated}
-
-## Technology Choices
-
-{resolved tech stack summary}
-
-## Key Findings
-
-{constraints, patterns, or risks discovered}
-```
-
-### Step 6: Phase 1 — Design
-
-**Prerequisite**: `research.md` complete.
-
-**a. Data model** — write `{FEATURE_DIR}/data-model.md`:
+寫入 `{FEATURE_DIR}/research.md`：
 
 ```markdown
-# Data Model: {FEATURE NAME}
+# 研究報告：{功能名稱}
 
-## Entities
+**日期**：{今天}
 
-### {Entity Name}
+## 決策
 
-**Description**: {what this represents}
+### {決策主題}
 
-**Fields**:
-- `{field}` ({type}): {description}
+- **決定**：{選擇的選項}
+- **理由**：{為什麼}
+- **考量的替代方案**：{評估了什麼}
 
-**Relationships**:
-- {relationship description}
+## 技術選型
 
-**Validation Rules**:
-- {rule}
+{解析後的技術堆疊摘要}
 
-**State Transitions** (if applicable):
-- {StateA} → {StateB}: {trigger}
+## 關鍵發現
+
+{限制條件、模式或風險}
 ```
 
-**b. Interface contracts** — only if the project exposes external interfaces.
+### 步驟 6：第 1 階段 — 設計
 
-Determine appropriate format from project type:
-- Web service → REST or GraphQL endpoint docs in `contracts/`
-- Library → public API signatures in `contracts/api.md`
-- CLI tool → command schema in `contracts/cli.md`
-- Skip entirely for purely internal tools
+**前提條件**：`research.md` 已完成。
 
-**c. Agent context update** — detect active AI agent and update its context file:
+**a. 資料模型** — 寫入 `{FEATURE_DIR}/data-model.md`：
+
+```markdown
+# 資料模型：{功能名稱}
+
+## 實體
+
+### {實體名稱}
+
+**說明**：{代表什麼}
+
+**欄位**：
+- `{欄位}` ({型別})：{說明}
+
+**關聯**：
+- {關聯說明}
+
+**驗證規則**：
+- {規則}
+
+**狀態轉換**（若適用）：
+- {狀態A} → {狀態B}：{觸發條件}
+```
+
+**b. 介面合約** — 僅在專案對外暴露介面時建立。
+
+依專案類型決定格式：
+- Web 服務 → REST/GraphQL 端點文件放在 `contracts/`
+- 函式庫 → 公開 API 簽名放在 `contracts/api.md`
+- CLI 工具 → 指令 schema 放在 `contracts/cli.md`
+- 純內部工具 → 跳過
+
+**c. Agent 環境更新** — 偵測當前 AI agent 並更新其 context 檔案：
 
 ```bash
-# Check in this order:
-ls CLAUDE.md 2>/dev/null          # → Claude Code
-ls .cursor/rules/ 2>/dev/null     # → Cursor
-ls .github/copilot-instructions.md 2>/dev/null  # → GitHub Copilot
-ls .windsurfrules 2>/dev/null     # → Windsurf
-ls .roo/rules/ 2>/dev/null        # → Roo Code
-ls AGENTS.md 2>/dev/null          # → generic fallback
+ls CLAUDE.md 2>/dev/null                               # → Claude Code
+ls .cursor/rules/ 2>/dev/null                          # → Cursor
+ls .github/copilot-instructions.md 2>/dev/null         # → GitHub Copilot
+ls .windsurfrules 2>/dev/null                          # → Windsurf
+ls .roo/rules/ 2>/dev/null                             # → Roo Code
+ls AGENTS.md 2>/dev/null                               # → 通用 fallback
 ```
 
-Add only new technology from the current plan. Preserve existing content.
+只新增當前計畫的新技術，保留現有內容。
 
-### Step 7: Update plan.md
+### 步驟 7：更新 plan.md
 
-Fill all placeholders with resolved values. Update Constitution Check with actual pass/fail.
+用解析後的值填寫所有佔位符。更新憲法檢核為實際通過/失敗狀態。
 
-### Step 8: Report
+### 步驟 8：回報結果
 
-- Branch: `{BRANCH}`
-- Plan: `{IMPL_PLAN}`
-- Generated: `research.md` ✅, `data-model.md` ✅ (or N/A), `contracts/` ✅ (or N/A)
-- Next: `/speckit.tasks`
+- 分支：`{BRANCH}`
+- 計畫：`{IMPL_PLAN}`
+- 已產生：`research.md` ✅、`data-model.md` ✅（或 N/A）、`contracts/` ✅（或 N/A）
+- 下一步：`/speckit.tasks`

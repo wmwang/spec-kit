@@ -1,130 +1,129 @@
 ---
-description: Ask up to 5 targeted clarification questions about the current feature spec and write the answers back into spec.md. No CLI installation required.
+description: 針對當前 feature spec 提出最多 5 個精準釐清問題，並將答案寫回 spec.md。不需安裝任何 CLI。
 handoffs:
-  - label: Build Technical Plan
+  - label: 建立技術計畫
     agent: speckit.plan
     prompt: Create a plan for the spec. I am building with...
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Outline
+## 流程說明
 
-**Goal**: Detect and reduce ambiguity in the active feature spec, recording answers directly in the file. Run BEFORE `/speckit.plan`. If skipping, warn that downstream rework risk increases.
+**目標**：偵測並減少當前 feature spec 中的歧義，直接將釐清結果記錄在檔案中。應在 `/speckit.plan` **之前**執行。若使用者明確表示跳過（例如探索性 spike），可繼續，但須警告下游返工風險增加。
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 或詢問使用者
 
-Set `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`. If missing: ERROR, instruct user to run `/speckit.specify` first.
+設定 `FEATURE_SPEC` = `{FEATURE_DIR}/spec.md`。若不存在：ERROR，請使用者先執行 `/speckit.specify`。
 
-### Step 2: Structured ambiguity scan
+### 步驟 2：結構化歧義掃描
 
-Read `FEATURE_SPEC`. For each category below, mark **Clear / Partial / Missing**:
+讀取 `FEATURE_SPEC`。對以下每個類別標記狀態：**清晰 / 部分 / 缺失**：
 
-| Category | What to check |
-|----------|--------------|
-| Functional Scope | Core user goals, success criteria, explicit out-of-scope |
-| Domain & Data Model | Entities, relationships, state transitions, scale |
-| Interaction & UX | User journeys, error/empty/loading states, a11y |
-| Non-Functional | Performance targets, reliability, security, compliance |
-| Integration | External services, failure modes, data formats |
-| Edge Cases | Negative scenarios, rate limiting, conflict resolution |
-| Constraints | Technical constraints, explicit tradeoffs |
-| Terminology | Canonical terms, avoided synonyms |
-| Acceptance | Testability of criteria, measurable DoD |
-| Placeholders | TODO markers, vague adjectives without quantification |
+| 類別 | 檢查內容 |
+|------|---------|
+| 功能範疇與行為 | 核心使用者目標、成功標準、明確的範疇外說明 |
+| 領域與資料模型 | 實體、關聯、狀態轉換、規模假設 |
+| 互動與 UX 流程 | 使用者旅程、錯誤/空/載入狀態、無障礙需求 |
+| 非功能品質屬性 | 效能目標、可靠性、安全性、法規限制 |
+| 整合與外部相依 | 外部服務、失敗模式、資料格式 |
+| 邊界情況與錯誤處理 | 負面情境、速率限制、衝突解決 |
+| 限制條件與取捨 | 技術限制、明確的取捨決策 |
+| 術語與一致性 | 標準術語、避免使用的同義詞 |
+| 驗收完成信號 | 標準的可測試性、可量測的完成定義 |
+| 其他 / 佔位符 | TODO 標記、缺乏量化的模糊形容詞 |
 
-Build an internal priority queue of candidate questions. Do NOT output it.
+建立內部優先佇列，不要直接輸出。
 
-### Step 3: Prioritize questions
+### 步驟 3：優先排列問題
 
-Generate at most **5** questions. Each must be answerable with:
-- A short multiple-choice (2–5 mutually exclusive options), OR
-- A short phrase (≤5 words)
+產生最多 **5 個**問題。每個問題必須可以用以下方式回答：
+- 短選項（2–5 個互斥選項），或
+- 短句（≤5 個字）
 
-Only ask if the answer materially impacts architecture, data modeling, test design, UX, security, or compliance. Skip low-impact questions. Favor those that reduce downstream rework.
+只問**答案確實影響架構、資料模型、測試設計、UX 行為、安全性或合規性的問題**。優先選擇能降低下游返工風險的問題。
 
-### Step 4: Interactive questioning — one at a time
+### 步驟 4：逐一互動提問
 
-Present **exactly one question at a time**.
+**每次只呈現一個問題**。
 
-**Multiple-choice format**:
+**選擇題格式**：
 
-1. Analyze all options; pick the best based on best practices and project context
-2. Show recommendation first: `**Recommended:** Option {X} — {reasoning}`
-3. Render options as a table:
+1. 分析所有選項，根據最佳實踐和專案背景選出最佳選項
+2. 優先顯示推薦：`**推薦**：選項 {X} — {理由}`
+3. 以表格呈現所有選項：
 
-| Option | Description |
-|--------|-------------|
-| A | {description} |
-| B | {description} |
-| C | {description} |
-| Short | Provide your own short answer (≤5 words) |
+| 選項 | 說明 |
+|------|------|
+| A | {說明} |
+| B | {說明} |
+| C | {說明} |
+| 自填 | 提供你自己的簡短答案（≤5 個字） |
 
-4. Add: *You can reply with the letter, say "yes"/"recommended" to accept the recommendation, or give your own short answer.*
+4. 補充：*你可以回覆選項字母，說「是」/「推薦」接受推薦，或自行提供簡短答案。*
 
-**Short-answer format** (no discrete options):
+**簡答格式**（無合適的離散選項時）：
 
-`**Suggested:** {proposed answer} — {brief reasoning}`
+`**建議**：{提案答案} — {簡要理由}`
 
-*Format: ≤5 words. Say "yes"/"suggested" to accept, or give your own.*
+*格式：≤5 個字。說「是」/「建議」接受，或自行提供。*
 
-**After each answer**:
-- "yes" / "recommended" / "suggested" → use stated recommendation
-- Ambiguous → ask disambiguation (does not count as a new question)
-- Valid → record and advance to next question
+**收到答案後**：
+- 「是」/「推薦」/「建議」→ 使用所述推薦
+- 模糊 → 請求澄清（不計入新問題數）
+- 有效 → 記錄並進入下一個問題
 
-**Stop when**: all critical ambiguities resolved, user says "done"/"stop", or 5 questions reached.
+**停止條件**：所有關鍵歧義已解決、使用者說「完成」/「停止」，或已問滿 5 個問題。
 
-### Step 5: Update spec after each accepted answer
+### 步驟 5：每次接受答案後立即更新規格
 
-After EACH answer:
+每次接受答案後：
 
-1. If first answer this session: ensure `## Clarifications` section exists (add after overview section if missing), then add `### Session {YYYY-MM-DD}` subheading
-2. Append: `- Q: {question} → A: {answer}`
-3. Apply the clarification to the most relevant section:
-   - Functional ambiguity → Functional Requirements
-   - Actor/role → User Stories / Actors
-   - Data shape → Data Model (add fields, types, constraints)
-   - Non-functional → NFR section (convert vague adjective to metric)
-   - Edge case → Edge Cases / Error Handling
-   - Terminology → normalize term across entire spec
-4. If the answer invalidates an earlier statement: replace it, do not duplicate
-5. **Save the file after each integration** (atomic overwrite)
+1. 若是本次 session 的第一個答案：確認 `## 釐清記錄` 段落存在（若無則在概述段落後建立），然後新增 `### Session YYYY-MM-DD` 小標題
+2. 在 session 下附加：`- Q：{問題} → A：{答案}`
+3. 將釐清應用到最相關的段落：
+   - 功能歧義 → 功能需求
+   - 角色/使用者 → 使用者故事
+   - 資料形狀 → 資料模型（新增欄位、型別、限制）
+   - 非功能限制 → NFR 段落（將模糊形容詞轉為具體指標）
+   - 邊界情況 → 邊界情況/錯誤處理
+   - 術語衝突 → 全文統一術語
+4. 若答案使先前的說法無效：替換而非重複，不留過時矛盾內容
+5. **每次整合後儲存檔案**（原子覆寫）
 
-### Step 6: Validate after each write
+### 步驟 6：每次寫入後驗證
 
-- One bullet per accepted answer in Clarifications (no duplicates)
-- Total asked ≤ 5
-- Updated sections have no lingering vague placeholders the answer was meant to resolve
-- No contradictory earlier statements remain
-- Only new headings allowed: `## Clarifications`, `### Session YYYY-MM-DD`
+- 釐清記錄中每個接受答案恰好一條（不重複）
+- 已問問題總數 ≤ 5
+- 更新後的段落無新答案應解決的模糊佔位符殘留
+- 無矛盾的舊說法殘留
+- 只允許新增這些標題：`## 釐清記錄`、`### Session YYYY-MM-DD`
 
-### Step 7: Report
+### 步驟 7：回報結果
 
-- Questions asked and answered
-- Sections updated (list names)
-- Coverage summary:
+- 已問與已回答的問題數
+- 各類別狀態摘要：
 
-| Category | Status |
-|----------|--------|
-| Functional Scope | Resolved / Clear / Deferred / Outstanding |
+| 類別 | 狀態 |
+|------|------|
+| 功能範疇 | 已解決 / 清晰 / 延後 / 待處理 |
 | ... | ... |
 
-- If any Outstanding/Deferred: recommend `/speckit.clarify` again or proceed to `/speckit.plan`
+- 若有待處理/延後項目：建議是否再次執行 `/speckit.clarify` 或進入 `/speckit.plan`
 
-**If no meaningful ambiguities found**: say so and suggest proceeding.
+**若無重要歧義**：直接說明並建議繼續下一步。
 
-Context for prioritization: $ARGUMENTS
+優先排列的背景資訊：$ARGUMENTS

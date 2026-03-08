@@ -1,112 +1,112 @@
 ---
-description: Execute the implementation plan by processing all tasks in tasks.md. No CLI installation required.
+description: 依序執行 tasks.md 中定義的所有任務，完成 feature 實作。不需安裝任何 CLI。
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Pre-Execution: Extension Hooks
+## 執行前：Extension Hooks
 
-Check `.specify/extensions.yml` for `hooks.before_implement`. For each enabled hook with no `condition`:
-- `optional: true` → display and offer to run
-- `optional: false` → display `EXECUTE_COMMAND: {command}` and wait for result before proceeding
+檢查 `.specify/extensions.yml` 中的 `hooks.before_implement`。對每個已啟用且無 `condition` 的 hook：
+- `optional: true` → 顯示並詢問是否執行
+- `optional: false` → 顯示 `EXECUTE_COMMAND: {command}` 並等待結果後再繼續
 
-Skip silently if file missing or unparseable.
+若檔案不存在或無法解析則靜默跳過。
 
-## Outline
+## 流程說明
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 或詢問使用者
 
-List available docs:
+列出可用文件：
 ```bash
 ls specs/{BRANCH}/
 ```
 
-Verify `{FEATURE_DIR}/tasks.md` exists. If missing: instruct user to run `/speckit.tasks` first.
+確認 `{FEATURE_DIR}/tasks.md` 存在。若不存在：請使用者先執行 `/speckit.tasks`。
 
-### Step 2: Check checklist gate
+### 步驟 2：Checklist 關卡
 
-If `{FEATURE_DIR}/checklists/` exists, scan every `.md` file in it:
+若 `{FEATURE_DIR}/checklists/` 存在，掃描其中每個 `.md` 檔案：
 
 ```
-| Checklist    | Total | Done | Remaining | Status  |
-|--------------|-------|------|-----------|---------|
-| ux.md        | 12    | 12   | 0         | ✓ PASS  |
-| security.md  | 8     | 5    | 3         | ✗ FAIL  |
+| Checklist    | 總計 | 已完成 | 未完成 | 狀態     |
+|--------------|------|--------|--------|----------|
+| ux.md        | 12   | 12     | 0      | ✓ 通過   |
+| security.md  | 8    | 5      | 3      | ✗ 未通過 |
 ```
 
-- All pass → proceed automatically
-- Any fail → **STOP** and ask: *"Some checklists are incomplete. Proceed anyway? (yes/no)"*
-  - `no` / `wait` / `stop` → halt
-  - `yes` / `proceed` → continue
+- 全部通過 → 自動繼續
+- 有未完成 → **停止**並詢問：*「部分 checklist 未完成，仍要繼續實作嗎？（是/否）」*
+  - `否` / `等等` / `停止` → 停止執行
+  - `是` / `繼續` → 繼續
 
-### Step 3: Load implementation context
+### 步驟 3：載入實作背景
 
-- **REQUIRED**: `tasks.md` — full task list and execution plan
-- **REQUIRED**: `plan.md` — tech stack, architecture, file structure
-- **IF EXISTS**: `data-model.md`, `contracts/`, `research.md`, `quickstart.md`
+- **必要**：`tasks.md` — 完整任務清單與執行計畫
+- **必要**：`plan.md` — 技術堆疊、架構、檔案結構
+- **若存在**：`data-model.md`、`contracts/`、`research.md`、`quickstart.md`
 
-### Step 4: Verify project setup
+### 步驟 4：確認專案設定
 
-Check and create ignore files based on the detected tech stack (from `plan.md`):
+依 `plan.md` 中偵測到的技術堆疊，檢查並建立 ignore 檔案：
 
 ```bash
-git rev-parse --git-dir 2>/dev/null  # → .gitignore needed?
-ls Dockerfile* 2>/dev/null            # → .dockerignore needed?
-ls .eslintrc* eslint.config.* 2>/dev/null  # → .eslintignore needed?
-ls .prettierrc* 2>/dev/null           # → .prettierignore needed?
-ls package.json 2>/dev/null           # → .npmignore needed?
+git rev-parse --git-dir 2>/dev/null   # → 需要 .gitignore？
+ls Dockerfile* 2>/dev/null             # → 需要 .dockerignore？
+ls .eslintrc* eslint.config.* 2>/dev/null  # → 需要 .eslintignore？
+ls .prettierrc* 2>/dev/null            # → 需要 .prettierignore？
+ls package.json 2>/dev/null            # → 需要 .npmignore？
 ```
 
-Common patterns by language:
-- **Node.js/TS**: `node_modules/`, `dist/`, `build/`, `*.log`, `.env*`
-- **Python**: `__pycache__/`, `*.pyc`, `.venv/`, `venv/`, `dist/`, `*.egg-info/`
-- **Java**: `target/`, `*.class`, `*.jar`, `.gradle/`, `build/`
-- **C#/.NET**: `bin/`, `obj/`, `*.user`, `packages/`
-- **Go**: `*.exe`, `*.test`, `vendor/`, `*.out`
-- **Rust**: `target/`, `debug/`, `release/`, `*.rs.bk`
-- **Swift**: `.build/`, `DerivedData/`, `*.swiftpm/`
-- **Universal**: `.DS_Store`, `Thumbs.db`, `*.tmp`, `*.swp`
+各語言常用模式：
+- **Node.js/TS**：`node_modules/`、`dist/`、`build/`、`*.log`、`.env*`
+- **Python**：`__pycache__/`、`*.pyc`、`.venv/`、`venv/`、`dist/`、`*.egg-info/`
+- **Java**：`target/`、`*.class`、`*.jar`、`.gradle/`、`build/`
+- **C#/.NET**：`bin/`、`obj/`、`*.user`、`packages/`
+- **Go**：`*.exe`、`*.test`、`vendor/`、`*.out`
+- **Rust**：`target/`、`debug/`、`release/`、`*.rs.bk`
+- **Swift**：`.build/`、`DerivedData/`、`*.swiftpm/`
+- **通用**：`.DS_Store`、`Thumbs.db`、`*.tmp`、`*.swp`
 
-If a file exists: append only missing critical patterns. If missing: create with full set.
+若檔案已存在：僅補充缺少的關鍵模式。若不存在：建立完整內容。
 
-### Step 5: Execute tasks phase by phase
+### 步驟 5：依階段執行任務
 
-From `tasks.md`:
-1. Parse all phases, tasks, dependencies, `[P]` markers
-2. **Phase by phase**: complete each before the next
-3. **Sequential tasks**: execute in order; halt on failure
-4. **Parallel tasks `[P]`**: run concurrently (different files, no shared dependencies)
-5. After each completed task: mark `[x]` in `tasks.md`
-6. Report progress after each task
+從 `tasks.md`：
+1. 解析所有階段、任務、依賴關係、`[P]` 標記
+2. **逐階段執行**：每個階段完成後才進入下一個
+3. **循序任務**：依序執行；失敗則停止
+4. **平行任務 `[P]`**：可並行執行（不同檔案，無共享依賴）
+5. 每個任務完成後：在 `tasks.md` 中標記 `[x]`
+6. 每個任務完成後回報進度
 
-Execution order within a phase:
-1. Setup / project structure
-2. Tests (if TDD requested)
-3. Models / data layer
-4. Services / business logic
-5. Endpoints / CLI / UI
-6. Integration / middleware
+每個階段內的執行順序：
+1. 設定 / 專案結構
+2. 測試（若有 TDD 需求）
+3. 模型 / 資料層
+4. 服務 / 商業邏輯
+5. 端點 / CLI / UI
+6. 整合 / 中介層
 
-### Step 6: Completion validation
+### 步驟 6：完成驗證
 
-- All required tasks marked `[x]`
-- Implementation matches spec.md requirements
-- Tests pass (if applicable)
-- Final status report with summary of completed work
+- 所有必要任務已標記 `[x]`
+- 實作符合 spec.md 需求
+- 測試通過（若適用）
+- 回報最終狀態與已完成工作摘要
 
-### Post-Execution: Extension Hooks
+### 執行後：Extension Hooks
 
-Check `.specify/extensions.yml` for `hooks.after_implement`. Process same as pre-execution hooks.
+檢查 `.specify/extensions.yml` 中的 `hooks.after_implement`，處理方式同執行前。

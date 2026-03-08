@@ -1,124 +1,124 @@
 ---
-description: Read-only cross-artifact consistency analysis across spec.md, plan.md, and tasks.md. No CLI installation required.
+description: 對 spec.md、plan.md 和 tasks.md 進行唯讀的跨文件一致性分析。不需安裝任何 CLI。
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Goal
+## 目標
 
-Identify inconsistencies, duplications, ambiguities, and underspecified items across `spec.md`, `plan.md`, and `tasks.md` before implementation. Run after `/speckit.tasks`.
+在實作前，識別 `spec.md`、`plan.md`、`tasks.md` 三份核心文件之間的不一致、重複、歧義和規格不足。應在 `/speckit.tasks` 之後執行。
 
-## Operating Constraints
+## 操作限制
 
-**STRICTLY READ-ONLY**: Do not modify any files. Output a structured analysis report only.
+**嚴格唯讀**：不修改任何檔案。僅輸出結構化分析報告。
 
-**Constitution Authority**: `.specify/memory/constitution.md` is non-negotiable. Constitution conflicts are automatically CRITICAL. To amend a principle, use `/speckit.constitution` separately.
+**憲法權威**：`.specify/memory/constitution.md` 在此分析範疇內**不可妥協**。憲法衝突自動標記為 CRITICAL。若需修改原則，請透過 `/speckit.constitution` 另行處理。
 
-## Execution Steps
+## 執行步驟
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 或詢問使用者
 
-Absolute paths:
+絕對路徑：
 - `SPEC` = `{FEATURE_DIR}/spec.md`
 - `PLAN` = `{FEATURE_DIR}/plan.md`
 - `TASKS` = `{FEATURE_DIR}/tasks.md`
 
-If any required file is missing: abort with error and instruct user to run the prerequisite command.
+若任何必要檔案不存在：中止並說明需要執行哪個前提指令。
 
-### Step 2: Load artifacts (minimal context)
+### 步驟 2：載入文件（最小必要背景）
 
-**From spec.md**: Overview, Functional Requirements, Non-Functional Requirements, User Stories, Edge Cases
+**從 spec.md**：概述、功能需求、非功能需求、使用者故事、邊界情況
 
-**From plan.md**: Architecture/stack, Data Model references, Phases, Technical constraints
+**從 plan.md**：架構/技術堆疊、資料模型引用、階段、技術限制
 
-**From tasks.md**: Task IDs, descriptions, phase grouping, `[P]` markers, referenced file paths
+**從 tasks.md**：任務 ID、說明、階段分組、`[P]` 標記、引用的檔案路徑
 
-**From constitution** (if `.specify/memory/constitution.md` exists): principle names and MUST/SHOULD statements
+**從憲法**（若 `.specify/memory/constitution.md` 存在）：原則名稱與 MUST/SHOULD 規範聲明
 
-### Step 3: Build semantic models (internal only, do not output)
+### 步驟 3：建立語意模型（僅內部使用，不輸出）
 
-- **Requirements inventory**: each FR/NFR with a stable slug (e.g. "User can upload file" → `user-can-upload-file`)
-- **User story inventory**: discrete actions with acceptance criteria
-- **Task coverage map**: each task mapped to requirement(s) or story by keyword/reference
-- **Constitution rule set**: extracted MUST/SHOULD normative statements
+- **需求清單**：每個 FR/NFR 附穩定 slug（例如「使用者可上傳檔案」→ `user-can-upload-file`）
+- **使用者故事清單**：離散的使用者行為與驗收標準
+- **任務覆蓋對應**：每個任務對應到需求或故事（依關鍵字/ID 推斷）
+- **憲法規則集**：提取的 MUST/SHOULD 規範聲明
 
-### Step 4: Detection passes (max 50 findings)
+### 步驟 4：偵測（最多 50 個發現）
 
-**A. Duplication**: near-duplicate requirements; flag lower-quality phrasing
+**A. 重複偵測**：近似重複的需求；標記措辭較差的那個
 
-**B. Ambiguity**: vague adjectives (fast, scalable, secure, intuitive, robust) without measurable criteria; unresolved placeholders (TODO, ???, `<placeholder>`)
+**B. 歧義偵測**：無可量測標準的模糊形容詞（快、可擴充、安全、直覺、強健）；未解決的佔位符（TODO、???、`<placeholder>`）
 
-**C. Underspecification**: requirements missing object or measurable outcome; user stories missing acceptance criteria; tasks referencing undefined files/components
+**C. 規格不足**：有動詞但缺少對象或可量測結果的需求；缺少驗收標準對應的使用者故事；任務引用了 spec/plan 未定義的檔案/元件
 
-**D. Constitution Alignment**: requirements or plan elements conflicting with MUST principles; missing mandated sections/gates
+**D. 憲法符合性**：任何需求或計畫元素違反 MUST 原則；缺少憲法要求的段落或品質關卡
 
-**E. Coverage Gaps**: requirements with zero tasks; tasks with no mapped requirement; NFRs not reflected in tasks
+**E. 覆蓋缺口**：無對應任務的需求；無對應需求/故事的任務；未反映在任務中的非功能需求
 
-**F. Inconsistency**: terminology drift; entities in plan absent from spec (or vice versa); conflicting requirements; task ordering contradictions
+**F. 不一致性**：術語漂移（同概念在不同文件有不同名稱）；計畫中有但規格中無的實體（或反之）；任務排序矛盾；衝突需求
 
-### Step 5: Severity
+### 步驟 5：嚴重性分級
 
-| Level | Criteria |
-|-------|----------|
-| CRITICAL | Violates constitution MUST; missing core artifact; zero-coverage requirement blocking baseline |
-| HIGH | Duplicate/conflicting requirement; ambiguous security/performance; untestable acceptance criterion |
-| MEDIUM | Terminology drift; missing NFR task coverage; underspecified edge case |
-| LOW | Style/wording; minor redundancy |
+| 等級 | 標準 |
+|------|------|
+| CRITICAL | 違反憲法 MUST；缺少核心文件；阻塞基本功能的零覆蓋需求 |
+| HIGH | 重複/衝突需求；模糊的安全性/效能屬性；無法測試的驗收標準 |
+| MEDIUM | 術語漂移；缺少 NFR 任務覆蓋；規格不足的邊界情況 |
+| LOW | 措辭/風格改善；不影響執行順序的輕微冗餘 |
 
-### Step 6: Analysis Report
+### 步驟 6：分析報告
 
-Output Markdown (no file writes):
-
----
-
-## Specification Analysis Report
-
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| A1 | Ambiguity | HIGH | spec.md:L45 | "fast" without metric | Quantify with p95 latency target |
-
-*(IDs prefixed by category: A=Ambiguity, C=Conflict, D=Duplication, G=Gap, I=Inconsistency, U=Underspec)*
-
-**Coverage Summary**:
-
-| Requirement | Has Task? | Task IDs | Notes |
-|-------------|-----------|----------|-------|
-
-**Constitution Issues** *(if any)*:
-
-**Unmapped Tasks** *(if any)*:
-
-**Metrics**:
-- Total Requirements: N
-- Total Tasks: N
-- Coverage: N% (requirements with ≥1 task)
-- CRITICAL: N | HIGH: N | MEDIUM: N | LOW: N
+輸出 Markdown（不寫入任何檔案）：
 
 ---
 
-### Step 7: Next Actions
+## 規格分析報告
 
-- CRITICAL issues → must resolve before `/speckit.implement`
-- LOW/MEDIUM only → may proceed; list suggestions
-- Provide explicit commands (e.g., "edit spec.md §FR-3 to quantify 'fast'")
+| ID | 類別 | 嚴重性 | 位置 | 摘要 | 建議 |
+|----|------|--------|------|------|------|
+| A1 | 歧義 | HIGH | spec.md:L45 | 「快」無量測標準 | 補充 p95 延遲目標 |
 
-### Step 8: Offer Remediation
+*（ID 前綴依類別：A=歧義、C=衝突、D=重複、G=缺口、I=不一致、U=規格不足）*
 
-Ask: *"Would you like me to suggest concrete edits for the top N issues?"* — do NOT apply automatically.
+**覆蓋摘要**：
 
-## Context
+| 需求 | 有任務？ | 任務 ID | 備註 |
+|------|---------|---------|------|
+
+**憲法問題**（若有）：
+
+**未對應任務**（若有）：
+
+**統計**：
+- 需求總數：N
+- 任務總數：N
+- 覆蓋率：N%（有 ≥1 個任務的需求）
+- CRITICAL：N | HIGH：N | MEDIUM：N | LOW：N
+
+---
+
+### 步驟 7：後續行動建議
+
+- 有 CRITICAL 問題 → 建議在 `/speckit.implement` 前解決
+- 僅 LOW/MEDIUM → 可繼續，列出改善建議
+- 提供明確的指令建議（例如：「編輯 spec.md §FR-3 以量化『快』」）
+
+### 步驟 8：提供修復建議
+
+詢問：*「需要我針對前 N 個問題提供具體修改建議嗎？」*——不自動套用。
+
+## 背景資訊
 
 $ARGUMENTS

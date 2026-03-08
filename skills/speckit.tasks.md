@@ -1,170 +1,170 @@
 ---
-description: Generate a dependency-ordered tasks.md from existing planning artifacts. No CLI installation required.
+description: 從現有規劃文件產生依賴排序的 tasks.md。不需安裝任何 CLI。
 handoffs:
-  - label: Analyze For Consistency
+  - label: 一致性分析
     agent: speckit.analyze
     prompt: Run a project analysis for consistency
     send: true
-  - label: Implement Project
+  - label: 開始實作
     agent: speckit.implement
     prompt: Start the implementation in phases
     send: true
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Pre-Execution: Extension Hooks
+## 執行前：Extension Hooks
 
-Check `.specify/extensions.yml` for `hooks.before_tasks`. For each enabled hook with no `condition`:
-- `optional: true` → display and offer to run
-- `optional: false` → display `EXECUTE_COMMAND: {command}` and wait for result before proceeding
+檢查 `.specify/extensions.yml` 中的 `hooks.before_tasks`。對每個已啟用且無 `condition` 的 hook：
+- `optional: true` → 顯示並詢問是否執行
+- `optional: false` → 顯示 `EXECUTE_COMMAND: {command}` 並等待結果後再繼續
 
-Skip silently if file missing or unparseable.
+若檔案不存在或無法解析則靜默跳過。
 
-## Outline
+## 流程說明
 
-### Step 1: Discover the active feature
+### 步驟 1：找到當前 feature
 
 ```bash
 git branch --show-current
 ```
 
-- Branch matches `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
-- Otherwise: scan `specs/` or ask user
+- 分支符合 `[0-9]+-[a-z0-9-]+` → `FEATURE_DIR` = `specs/{BRANCH}`
+- 否則：掃描 `specs/` 或詢問使用者
 
-List available docs:
+列出可用文件：
 ```bash
 ls specs/{BRANCH}/
 ```
 
-### Step 2: Load planning documents
+### 步驟 2：載入規劃文件
 
-From `FEATURE_DIR`:
-- **Required**: `plan.md` (tech stack, libraries, project structure)
-- **Required**: `spec.md` (user stories with priorities P1/P2/P3...)
-- **Optional**: `data-model.md`, `contracts/`, `research.md`, `quickstart.md`
+從 `FEATURE_DIR` 讀取：
+- **必要**：`plan.md`（技術堆疊、函式庫、專案結構）
+- **必要**：`spec.md`（含優先級 P1/P2/P3... 的使用者故事）
+- **選用**：`data-model.md`、`contracts/`、`research.md`、`quickstart.md`
 
-If `plan.md` or `spec.md` missing, stop and instruct user to run the prerequisite command.
+若 `plan.md` 或 `spec.md` 不存在，停止並請使用者執行前提指令。
 
-### Step 3: Generate task breakdown
+### 步驟 3：產生任務分解
 
-1. From `plan.md`: extract tech stack, libraries, project structure
-2. From `spec.md`: extract user stories and their priorities
-3. If `data-model.md`: map entities to user stories
-4. If `contracts/`: map contracts to user stories
-5. If `research.md`: extract decisions for setup tasks
+1. 從 `plan.md`：提取技術堆疊、函式庫、專案結構
+2. 從 `spec.md`：提取使用者故事與其優先級
+3. 若有 `data-model.md`：將實體對應到使用者故事
+4. 若有 `contracts/`：將合約對應到使用者故事
+5. 若有 `research.md`：提取決策作為設定任務
 
-### Step 4: Write tasks.md
+### 步驟 4：寫入 tasks.md
 
-Write `{FEATURE_DIR}/tasks.md`:
+寫入 `{FEATURE_DIR}/tasks.md`：
 
 ```markdown
-# Tasks: {FEATURE NAME}
+# 任務清單：{功能名稱}
 
-**Input**: `specs/{BRANCH}/` — plan.md + spec.md required
-**Format**: `- [ ] T{NNN} [P?] [US{N}?] Description — path/to/file.ext`
-- `[P]` = can run in parallel (different files, no dependencies on incomplete tasks)
-- `[US1]` = belongs to User Story 1 (maps to spec.md priorities)
-
----
-
-## Phase 1: Setup
-
-**Purpose**: Project initialization and shared infrastructure
-
-- [ ] T001 Create project structure per plan.md
-- [ ] T002 Initialize dependencies and configuration
-- [ ] T003 [P] Configure linting/formatting
+**輸入**：`specs/{BRANCH}/` — 需要 plan.md + spec.md
+**格式**：`- [ ] T{NNN} [P?] [US{N}?] 說明 — 路徑/到/檔案.ext`
+- `[P]` = 可平行執行（不同檔案，無未完成依賴）
+- `[US1]` = 屬於使用者故事 1（對應 spec.md 優先級）
 
 ---
 
-## Phase 2: Foundational
+## 第 1 階段：設定
 
-**Purpose**: Blocking prerequisites — MUST be complete before any user story
+**目的**：專案初始化與共用基礎設施
 
-⚠️ No user story work begins until this phase is done.
-
-- [ ] T004 {foundational task}
-- [ ] T005 [P] {foundational task}
-
-**Checkpoint**: Foundation complete
+- [ ] T001 依 plan.md 建立專案結構
+- [ ] T002 初始化相依套件與設定
+- [ ] T003 [P] 設定程式碼風格工具
 
 ---
 
-## Phase 3: User Story 1 — {Title} (Priority: P1) 🎯 MVP
+## 第 2 階段：基礎
 
-**Goal**: {what this story delivers}
-**Independent Test**: {how to verify this story alone}
+**目的**：阻塞性前提條件 — 必須在任何使用者故事前完成
 
-- [ ] T010 [P] [US1] {description} — {path/to/file}
-- [ ] T011 [US1] {description} — {path/to/file}
+⚠️ 此階段完成前，不可開始使用者故事的工作。
 
-**Checkpoint**: User Story 1 independently testable
+- [ ] T004 {基礎任務}
+- [ ] T005 [P] {基礎任務}
 
----
-
-## Phase 4: User Story 2 — {Title} (Priority: P2)
-
-{repeat pattern}
+**檢查點**：基礎完成
 
 ---
 
-## Phase N: Polish & Cross-Cutting
+## 第 3 階段：使用者故事 1 — {標題}（優先級：P1）🎯 MVP
 
-- [ ] TXXX [P] Documentation updates
-- [ ] TXXX Code cleanup and refactoring
+**目標**：{此故事交付什麼}
+**獨立測試**：{如何單獨驗證此故事}
+
+- [ ] T010 [P] [US1] {說明} — {路徑/到/檔案}
+- [ ] T011 [US1] {說明} — {路徑/到/檔案}
+
+**檢查點**：使用者故事 1 可獨立測試
 
 ---
 
-## Dependencies
+## 第 4 階段：使用者故事 2 — {標題}（優先級：P2）
 
-| Phase | Depends On | Notes |
-|-------|-----------|-------|
-| Setup (Ph1) | — | Start immediately |
-| Foundational (Ph2) | Ph1 | Blocks all user stories |
-| US1 (Ph3) | Ph2 | Independent of other stories |
-| US2 (Ph4) | Ph2 | May integrate with US1 |
-| Polish | All desired stories | Final phase |
+{繼續同樣格式}
 
-## Implementation Strategy
+---
 
-**MVP** (User Story 1 only):
-1. Phase 1: Setup → Phase 2: Foundational → Phase 3: US1
-2. Validate independently, then deploy/demo
+## 最終階段：精修與橫切關注點
 
-**Incremental**: each story adds value without breaking previous stories.
+- [ ] TXXX [P] 更新文件
+- [ ] TXXX 程式碼清理與重構
+
+---
+
+## 依賴關係
+
+| 階段 | 依賴 | 備註 |
+|------|------|------|
+| 設定（第 1 階段） | — | 立即開始 |
+| 基礎（第 2 階段） | 第 1 階段 | 阻塞所有使用者故事 |
+| US1（第 3 階段） | 第 2 階段 | 不依賴其他故事 |
+| US2（第 4 階段） | 第 2 階段 | 可能整合 US1 |
+| 精修 | 所有期望的故事 | 最終階段 |
+
+## 實作策略
+
+**MVP**（僅使用者故事 1）：
+1. 第 1 階段：設定 → 第 2 階段：基礎 → 第 3 階段：US1
+2. 獨立驗證，然後部署/展示
+
+**漸進交付**：每個故事在不破壞前一個的情況下增加價值。
 ```
 
-**Task format rules (REQUIRED)**:
+**任務格式規則（必要）**：
 
-Every task must follow exactly:
+每個任務必須嚴格遵守：
 ```
-- [ ] T{NNN} [P?] [US{N}?] Description — path/to/file.ext
+- [ ] T{NNN} [P?] [US{N}?] 說明 — 路徑/到/檔案.ext
 ```
 
-- ✅ `- [ ] T001 Create project structure`
-- ✅ `- [ ] T005 [P] Auth middleware — src/middleware/auth.py`
-- ✅ `- [ ] T012 [P] [US1] User model — src/models/user.py`
-- ❌ `- [ ] Create User model` (missing ID)
-- ❌ `T001 [US1] Create model` (missing checkbox)
-- ❌ `- [ ] T001 [US1] Create model` (missing file path)
+- ✅ `- [ ] T001 建立專案結構`
+- ✅ `- [ ] T005 [P] 驗證中介層 — src/middleware/auth.py`
+- ✅ `- [ ] T012 [P] [US1] 使用者模型 — src/models/user.py`
+- ❌ `- [ ] 建立使用者模型`（缺少 ID）
+- ❌ `T001 [US1] 建立模型`（缺少 checkbox）
+- ❌ `- [ ] T001 [US1] 建立模型`（缺少檔案路徑）
 
-Setup/Foundational/Polish phases: no `[US{N}]` label.
-User Story phases: `[US{N}]` label required.
+設定/基礎/精修階段：不加 `[US{N}]` 標籤。
+使用者故事階段：必須有 `[US{N}]` 標籤。
 
-### Step 5: Report
+### 步驟 5：回報結果
 
-- Path to `tasks.md`
-- Total tasks, tasks per story
-- Parallel opportunities
-- Suggested MVP scope (typically Phase 1+2+3)
+- `tasks.md` 路徑
+- 總任務數、每個故事的任務數
+- 平行執行機會
+- 建議的 MVP 範疇（通常是第 1+2+3 階段）
 
-### Post-Execution: Extension Hooks
+### 執行後：Extension Hooks
 
-Check `.specify/extensions.yml` for `hooks.after_tasks`. Process same as pre-execution hooks.
+檢查 `.specify/extensions.yml` 中的 `hooks.after_tasks`，處理方式同執行前。

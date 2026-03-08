@@ -1,102 +1,102 @@
 ---
-description: Create or update the project constitution — architectural principles that govern all planning and implementation. No CLI installation required.
+description: 建立或更新專案憲法——治理所有規劃與實作的架構原則。不需安裝任何 CLI。
 handoffs:
-  - label: Build Specification
+  - label: 建立功能規格
     agent: speckit.specify
     prompt: Implement the feature specification based on the updated constitution. I want to build...
 ---
 
-## User Input
+## 使用者輸入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+**必須**在繼續之前考慮使用者輸入（若不為空）。
 
-## Outline
+## 流程說明
 
-You are creating or updating the project constitution at `.specify/memory/constitution.md`.
+你正在建立或更新位於 `.specify/memory/constitution.md` 的專案憲法。
 
-### Step 1: Initialize if needed
+### 步驟 1：若不存在則初始化
 
 ```bash
 ls .specify/memory/constitution.md 2>/dev/null || echo "missing"
 ```
 
-If missing, create directory and bootstrap from this template:
+若不存在，建立目錄並從此模板初始化：
 
 ```bash
 mkdir -p .specify/memory
 ```
 
-Then create `.specify/memory/constitution.md` with:
+然後建立 `.specify/memory/constitution.md`，內容如下：
 
 ```markdown
-# [PROJECT_NAME] Constitution
+# [PROJECT_NAME] 憲法
 
-## Core Principles
+## 核心原則
 
-### I. [PRINCIPLE_1_NAME]
+### 一、[PRINCIPLE_1_NAME]
 
 [PRINCIPLE_1_DESCRIPTION]
 
-### II. [PRINCIPLE_2_NAME]
+### 二、[PRINCIPLE_2_NAME]
 
 [PRINCIPLE_2_DESCRIPTION]
 
-### III. [PRINCIPLE_3_NAME]
+### 三、[PRINCIPLE_3_NAME]
 
 [PRINCIPLE_3_DESCRIPTION]
 
-### IV. [PRINCIPLE_4_NAME]
+### 四、[PRINCIPLE_4_NAME]
 
 [PRINCIPLE_4_DESCRIPTION]
 
-### V. [PRINCIPLE_5_NAME]
+### 五、[PRINCIPLE_5_NAME]
 
 [PRINCIPLE_5_DESCRIPTION]
 
-## Development Standards
+## 開發標準
 
 [STANDARDS_CONTENT]
 
-## Governance
+## 治理
 
 [GOVERNANCE_RULES]
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+**版本**：[CONSTITUTION_VERSION] | **批准日期**：[RATIFICATION_DATE] | **最後修訂**：[LAST_AMENDED_DATE]
 ```
 
-The user may specify fewer or more principles — follow their intent.
+使用者可能指定較少或較多的原則——依其意圖調整數量。
 
-### Step 2: Collect values for all placeholders
+### 步驟 2：收集所有佔位符的值
 
-- Use user input if supplied; otherwise infer from repo context (README, existing code patterns)
-- `RATIFICATION_DATE`: original adoption date (use today if unknown or mark `TODO(RATIFICATION_DATE): unknown`)
-- `LAST_AMENDED_DATE`: today if making changes
-- `CONSTITUTION_VERSION`: semantic versioning:
-  - **MAJOR**: principle removed or redefined in a breaking way
-  - **MINOR**: new principle or section added
-  - **PATCH**: clarifications, wording, typos
+- 使用者輸入若有提供則直接使用；否則從 repo 背景推斷（README、現有程式碼模式）
+- `RATIFICATION_DATE`：原始批准日期（不知道則用今天或標記 `TODO(RATIFICATION_DATE): 不明`）
+- `LAST_AMENDED_DATE`：若有更動則填今天
+- `CONSTITUTION_VERSION`：語意化版本規則：
+  - **MAJOR**：以不相容的方式移除或重新定義原則
+  - **MINOR**：新增原則或段落
+  - **PATCH**：澄清、措辭調整、錯字修正
 
-Common principle patterns (adapt to project context):
-- **Library-First**: every feature starts as a standalone library
-- **Test-First** (NON-NEGOTIABLE): TDD mandatory — tests written → fail → implement
-- **Simplicity**: start simple, YAGNI, no premature abstraction
-- **Observability**: structured logging required, debuggability via text I/O
-- **Versioning**: MAJOR.MINOR.BUILD with backward compatibility commitment
+常見原則範本（依專案背景調整）：
+- **函式庫優先**：每個功能先作為獨立函式庫實作
+- **測試優先**（不可妥協）：TDD 強制要求——先寫測試 → 測試失敗 → 實作
+- **簡潔性**：從簡單開始，YAGNI，不提前抽象化
+- **可觀測性**：必須有結構化日誌，透過文字 I/O 確保可偵錯性
+- **版本管理**：MAJOR.MINOR.BUILD 格式，承諾向下相容
 
-### Step 3: Draft updated constitution
+### 步驟 3：起草更新後的憲法
 
-- Replace every `[PLACEHOLDER]` with concrete text — no brackets remaining
-- Each Principle section must have: succinct name, non-negotiable rules (bullets or paragraph), explicit rationale
-- Governance section must include: amendment procedure, versioning policy, compliance review cadence
-- Replace "should" with MUST/SHOULD where the normative strength is clear
+- 用具體文字替換每個 `[佔位符]`——不留任何括號（除非明確延後並附說明）
+- 每個原則段落必須包含：簡潔名稱、不可妥協的規則（條列或段落）、明確理由
+- 治理段落必須包含：修訂程序、版本政策、合規審查頻率
+- 將「應該」替換為 必須/應當（MUST/SHOULD）（規範強度明確時）
 
-### Step 4: Propagate changes to dependent files
+### 步驟 4：同步更新相依檔案
 
-Check which of these files exist in the project root and update any that reference principles:
+檢查哪些檔案存在並更新任何引用原則的內容：
 
 ```bash
 ls README.md 2>/dev/null
@@ -104,43 +104,43 @@ ls docs/ 2>/dev/null
 ls AGENTS.md CLAUDE.md .cursor/rules/ .github/copilot-instructions.md 2>/dev/null
 ```
 
-For each file found, update any references to renamed, added, or removed principles.
+對每個找到的檔案，更新任何對已重新命名、新增或移除的原則的引用。
 
-If the project also uses spec-kit's template files (`templates/plan-template.md`, `templates/spec-template.md`, `templates/tasks-template.md`), check and update them too — but this is only applicable in spec-kit repos. Skip silently if not present.
+若專案也使用 spec-kit 的模板檔案（`templates/plan-template.md` 等），也一併更新——但這只適用於 spec-kit repo，若不存在則靜默跳過。
 
-### Step 5: Sync Impact Report
+### 步驟 5：同步影響報告
 
-Prepend as HTML comment at top of constitution file:
+在憲法檔案頂端插入 HTML 註解：
 
 ```html
 <!--
-## Sync Impact Report
+## 同步影響報告
 
-**Version change**: {OLD} → {NEW}
-**Modified principles**: {list or none}
-**Added sections**: {list or none}
-**Removed sections**: {list or none}
-**Files updated**:
-- README.md: ✅ updated / ⚠ pending / N/A
-- AGENTS.md / agent context file: ✅ updated / ⚠ pending / N/A
-- templates/ (if spec-kit project): ✅ updated / ⚠ pending / N/A
-**Deferred items**: {list or none}
+**版本變更**：{舊版} → {新版}
+**修改的原則**：{清單或無}
+**新增段落**：{清單或無}
+**移除段落**：{清單或無}
+**已更新的檔案**：
+- README.md：✅ 已更新 / ⚠ 待處理 / N/A
+- AGENTS.md / agent context 檔案：✅ 已更新 / ⚠ 待處理 / N/A
+- templates/（若為 spec-kit 專案）：✅ 已更新 / ⚠ 待處理 / N/A
+**延後項目**：{清單或無}
 -->
 ```
 
-### Step 6: Validate before writing
+### 步驟 6：寫入前驗證
 
-- No remaining `[PLACEHOLDER]` tokens (unless explicitly deferred with `TODO`)
-- Version matches Sync Impact Report
-- Dates in ISO format (YYYY-MM-DD)
-- All principles are declarative and free of vague language
+- 無殘留的 `[佔位符]` token（除非明確以 `TODO` 延後）
+- 版本與同步影響報告一致
+- 日期為 ISO 格式（YYYY-MM-DD）
+- 所有原則為陳述性語句，不含模糊用語
 
-### Step 7: Write the constitution
+### 步驟 7：寫入憲法
 
-Overwrite `.specify/memory/constitution.md` with completed content.
+覆寫 `.specify/memory/constitution.md`。
 
-### Step 8: Report
+### 步驟 8：回報結果
 
-- New version and bump rationale
-- Files flagged for manual follow-up
-- Suggested commit message (e.g., `docs: amend constitution to vX.Y.Z`)
+- 新版本與版本升級理由
+- 需要人工跟進的檔案
+- 建議的 commit 訊息（例如：`docs: 更新憲法至 vX.Y.Z`）
